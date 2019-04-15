@@ -1,0 +1,62 @@
+version: 2.1
+
+workflows:
+  development:
+    jobs:
+      - opg-shared/lint_terraform:
+          name: lint_terraform
+      - opg-shared/apply_terraform:
+          name: apply_terraform_development
+          workspace: development
+          requires: [lint_terraform]
+          filters:
+            branches:
+              ignore: master
+
+  path_to_live:
+    jobs:
+      - opg-shared/apply_terraform:
+          name: apply_terraform
+          workspace: production
+          filters:
+            branches:
+              only: master
+orbs:
+  opg-shared:
+    executors:
+      terraform:
+        docker: [image: hashicorp/terraform]
+
+    jobs:
+      lint_terraform:
+        executor: terraform
+        parameters:
+          workspace:
+            description: Terraform workspace name
+            type: string
+            default: development
+        environment:
+          TF_WORKSPACE: "<<parameters.workspace>>"
+        steps:
+          - checkout
+          - run:
+              name: Lint Terraform
+              command: |
+                terraform init
+                terraform validate
+      apply_terraform:
+        executor: terraform
+        parameters:
+          workspace:
+            description: Terraform Workspace Name
+            type: string
+            default: development
+        environment:
+          TF_WORKSPACE: "<<parameters.workspace>>"
+        steps:
+          - checkout
+          - run:
+              name: Apply Terraform
+              command: |
+                terraform init
+                terraform apply --auto-approve 
