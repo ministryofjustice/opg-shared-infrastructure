@@ -30,16 +30,6 @@ resource "aws_nat_gateway" "nat" {
   tags          = "${local.default_tags}"
 }
 
-resource "aws_default_subnet" "private" {
-  count             = 3
-  availability_zone = "${element(data.aws_availability_zones.default.names, count.index)}"
-
-  tags = "${merge(
-      local.default_tags,
-      map("Name", "private")
-  )}"
-}
-
 resource "aws_subnet" "private" {
   count      = 3
   cidr_block = "${cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 3)}"
