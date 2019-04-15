@@ -30,7 +30,7 @@ resource "aws_nat_gateway" "nat" {
   tags          = "${local.default_tags}"
 }
 
-resource "aws_default_subnet" "public" {
+resource "aws_default_subnet" "private" {
   count             = 3
   availability_zone = "${element(data.aws_availability_zones.default.names, count.index)}"
 
