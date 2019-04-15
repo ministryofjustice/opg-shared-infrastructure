@@ -11,6 +11,11 @@ resource "aws_default_subnet" "public" {
   count             = 3
   availability_zone = "${element(data.aws_availability_zones.default.names, count.index)}"
   tags              = "${local.default_tags}"
+
+  tags = "${merge(
+      local.default_tags,
+      map("Name", "public")
+  )}"
 }
 
 resource "aws_eip" "nat" {
@@ -30,6 +35,11 @@ resource "aws_subnet" "private" {
   cidr_block = "${cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 3)}"
   vpc_id     = "${aws_default_vpc.default.id}"
   tags       = "${local.default_tags}"
+
+  tags = "${merge(
+      local.default_tags,
+      map("Name", "private")
+  )}"
 }
 
 resource "aws_route_table_association" "private" {
