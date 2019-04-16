@@ -31,10 +31,11 @@ resource "aws_nat_gateway" "nat" {
 }
 
 resource "aws_subnet" "private" {
-  count      = 3
-  cidr_block = "${cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 6)}"
-  vpc_id     = "${aws_default_vpc.default.id}"
-  tags       = "${local.default_tags}"
+  count             = 3
+  cidr_block        = "${cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 6)}"
+  availability_zone = "${element(data.aws_availability_zones.default.names, count.index)}"
+  vpc_id            = "${aws_default_vpc.default.id}"
+  tags              = "${local.default_tags}"
 
   tags = "${merge(
       local.default_tags,
