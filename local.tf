@@ -1,6 +1,4 @@
 locals {
-  account = "${lookup(var.accounts, terraform.workspace)}"
-
   mandatory_moj_tags = {
     business-unit    = "OPG"
     application      = "opg-shared-infrastructure"
@@ -12,9 +10,10 @@ locals {
     infrastructure-support = "OPG Webops: opgteam@digital.justice.gov.uk"
   }
 
-  default_tags = "${merge(local.mandatory_moj_tags,local.optional_tags)}"
-}
+  is_production = {
+    "development" = "false"
+    "production"  = "true"
+  }
 
-variable "accounts" {
-  type = "map"
+  default_tags = "${merge(local.mandatory_moj_tags,local.optional_tags)}"
 }
