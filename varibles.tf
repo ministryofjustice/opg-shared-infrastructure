@@ -7,12 +7,12 @@ variable "management_role" {
 }
 
 variable "accounts" {
-  type = "map"
+  type = map(string)
 
   default = {
     development = "679638075911"
     production  = "997462338508"
-    management = "311462405659"
-    
+    management  = "311462405659"
   }
 }
+
