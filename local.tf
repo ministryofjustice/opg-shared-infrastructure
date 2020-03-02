@@ -3,17 +3,16 @@ locals {
     business-unit    = "OPG"
     application      = "opg-shared-infrastructure"
     environment-name = terraform.workspace
-    owner            = "Sean Privett: sean.privett@digital.justice.gov.uk"
+    is-production    = tostring(local.account.is_production)
+    owner            = "opgteam@digital.justice.gov.uk"
   }
-
   optional_tags = {
-    infrastructure-support = "OPG Webops: opgteam@digital.justice.gov.uk"
+    source-code            = "https://github.com/ministryofjustice/opg-shared-infrastructure"
+    infrastructure-support = "opgteam@digital.justice.gov.uk"
   }
 
-  is_production = {
-    "development" = "false"
-    "production"  = "true"
-  }
+  environment = terraform.workspace
+  account     = contains(keys(var.accounts), local.environment) ? var.accounts[local.environment] : var.accounts.development
 
   default_tags = merge(local.mandatory_moj_tags, local.optional_tags)
 }
