@@ -1,19 +1,14 @@
 locals {
   mandatory_moj_tags = {
-    # The capitalized names are required by Salt
     business-unit    = "OPG"
     application      = "opg-shared-infrastructure"
-    environment-name = local.environment
-    Environment      = local.environment
-    owner            = "OPGOPS opgteam@digital.justice.gov.uk"
-    Project          = "core"
+    environment-name = terraform.workspace
     is-production    = tostring(local.account.is_production)
-    Stack            = local.environment
-    source-code      = "https://github.com/ministryofjustice/opg-shared-infrastructure"
+    owner            = "opgteam@digital.justice.gov.uk"
   }
-
   optional_tags = {
-    infrastructure-support = "OPG Webops: opgteam@digital.justice.gov.uk"
+    source-code            = "https://github.com/ministryofjustice/opg-shared-infrastructure"
+    infrastructure-support = "opgteam@digital.justice.gov.uk"
   }
 
   environment = terraform.workspace
