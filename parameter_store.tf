@@ -8,3 +8,14 @@ resource "aws_ssm_parameter" "incident_response_tag" {
     ignore_changes = [value]
   }
 }
+
+resource "aws_ssm_parameter" "s3_antivirus_tag" {
+  name        = "opg-s3-antivirus-production-tag"
+  description = "Latest S3 Antivirus Tag to use in production lambdas"
+  type        = "String"
+  value       = "latest"
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
