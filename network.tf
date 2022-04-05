@@ -11,25 +11,17 @@ data "aws_internet_gateway" "default" {
 resource "aws_default_subnet" "public" {
   count             = 3
   availability_zone = element(data.aws_availability_zones.default.names, count.index)
-
-  tags = merge(
-    local.default_tags,
-    {
-      "Name" = "public"
-    },
-  )
+  tags              = { "Name" = "public" }
 }
 
 resource "aws_eip" "nat" {
   count = 3
-  tags  = local.default_tags
 }
 
 resource "aws_nat_gateway" "nat" {
   count         = 3
   allocation_id = element(aws_eip.nat.*.id, count.index)
   subnet_id     = element(aws_default_subnet.public.*.id, count.index)
-  tags          = local.default_tags
 }
 
 resource "aws_subnet" "private" {
@@ -37,13 +29,7 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 6)
   availability_zone = element(data.aws_availability_zones.default.names, count.index)
   vpc_id            = aws_default_vpc.default.id
-
-  tags = merge(
-    local.default_tags,
-    {
-      "Name" = "private"
-    },
-  )
+  tags              = { "Name" = "private" }
 }
 
 resource "aws_subnet" "persistence" {
@@ -51,13 +37,7 @@ resource "aws_subnet" "persistence" {
   cidr_block        = cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 9)
   availability_zone = element(data.aws_availability_zones.default.names, count.index)
   vpc_id            = aws_default_vpc.default.id
-
-  tags = merge(
-    local.default_tags,
-    {
-      "Name" = "persistence"
-    },
-  )
+  tags              = { "Name" = "persistence" }
 }
 
 resource "aws_route_table_association" "private" {
@@ -69,7 +49,6 @@ resource "aws_route_table_association" "private" {
 resource "aws_route_table" "private" {
   count  = 3
   vpc_id = aws_default_vpc.default.id
-  tags   = local.default_tags
 }
 
 resource "aws_route" "private" {
@@ -80,16 +59,13 @@ resource "aws_route" "private" {
 }
 
 resource "aws_default_vpc" "default" {
-  tags = local.default_tags
 }
 
 resource "aws_default_vpc_dhcp_options" "default" {
-  tags = local.default_tags
 }
 
 resource "aws_default_route_table" "default" {
   default_route_table_id = aws_default_vpc.default.default_route_table_id
-  tags                   = local.default_tags
 }
 
 resource "aws_route" "default" {
@@ -100,10 +76,8 @@ resource "aws_route" "default" {
 
 resource "aws_default_security_group" "default" {
   vpc_id = aws_default_vpc.default.id
-  tags   = local.default_tags
 }
 
 output "nat_ips" {
   value = aws_nat_gateway.nat.*.public_ip
 }
-
