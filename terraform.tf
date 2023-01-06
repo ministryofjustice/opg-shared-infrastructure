@@ -7,6 +7,14 @@ terraform {
     role_arn       = "arn:aws:iam::311462405659:role/state_write"
     dynamodb_table = "remote_lock"
   }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.7.0"
+    }
+  }
+  required_version = ">= 1.0.0"
 }
 
 provider "aws" {
