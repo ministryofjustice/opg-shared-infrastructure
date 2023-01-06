@@ -4,9 +4,17 @@ terraform {
     key            = "opg-shared-infrastructure/terraform.tfstate"
     encrypt        = true
     region         = "eu-west-1"
-    role_arn       = "arn:aws:iam::311462405659:role/state_write"
+    role_arn       = "arn:aws:iam::311462405659:role/shared-ci"
     dynamodb_table = "remote_lock"
   }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.7.0"
+    }
+  }
+  required_version = ">= 1.0.0"
 }
 
 provider "aws" {
