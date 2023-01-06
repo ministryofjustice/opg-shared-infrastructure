@@ -1,9 +1,9 @@
 variable "default_role" {
-  default = "ci"
+  default = "shared-ci"
 }
 
 variable "management_role" {
-  default = "ci"
+  default = "shared-ci"
 }
 
 variable "accounts" {
@@ -14,4 +14,3 @@ variable "accounts" {
     })
   )
 }
-
