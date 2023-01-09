@@ -1,0 +1,92 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TERRAFORM_VERSION: 1.3.7
+
+jobs:
+  lint-and-validate:
+    name: 'Validate Infrastructure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+          role-session-name: GitHubActionsTerraform
+
+      - name: Lint Terraform
+        id: tf_lint
+        run: terraform fmt -check -recursive
+
+      - name: Validate Terraform
+        id: tf_validate
+        run: |
+          terraform init
+          terraform validate
+
+  plan-and-apply:
+    name: Plan ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 1
+      matrix:
+        include:
+          - environment: "Development"
+            workspace_environment: "development"
+
+          - environment: "Production"
+            workspace_environment: "production"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - uses: unfor19/install-aws-cli-action@v1
+
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+          role-session-name: GitHubActionsTerraform
+
+      - name: Setup
+        run: echo TF_WORKSPACE=${{ matrix.workspace_environment }} >> $GITHUB_ENV
+
+      - name: Init & Plan
+        run: |
+          terraform init
+          terraform plan --lock-timeout=300s --parallelism=200 --out=${{ env.TF_WORKSPACE }}.plan > ${{ env.TF_WORKSPACE }}.log
+
+      - name: Output Plan
+        run: |
+          cat ${{ env.TF_WORKSPACE }}.log
+          echo ''
+          echo '----------------------Concise Plan---------------------------'
+          cat ${{ env.TF_WORKSPACE }}.log | grep '\.' | grep '#' || true
+
+      - name: Apply ${{ matrix.environment }}
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run:  terraform apply -parallelism=200 -lock-timeout=300s ${{ env.TF_WORKSPACE }}.plan
