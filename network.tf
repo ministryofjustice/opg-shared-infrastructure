@@ -10,7 +10,7 @@ data "aws_internet_gateway" "default" {
 
 resource "aws_default_subnet" "public" {
   count             = 3
-  availability_zone = element(data.aws_availability_zones.default.names, count.index)
+  availability_zone = data.aws_availability_zones.default.names[count.index]
   tags              = { "Name" = "public" }
 }
 
@@ -20,14 +20,14 @@ resource "aws_eip" "nat" {
 
 resource "aws_nat_gateway" "nat" {
   count         = 3
-  allocation_id = element(aws_eip.nat.*.id, count.index)
-  subnet_id     = element(aws_default_subnet.public.*.id, count.index)
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_default_subnet.public[count.index].id
 }
 
 resource "aws_subnet" "private" {
   count             = 3
   cidr_block        = cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 6)
-  availability_zone = element(data.aws_availability_zones.default.names, count.index)
+  availability_zone = data.aws_availability_zones.default.names[count.index]
   vpc_id            = aws_default_vpc.default.id
   tags              = { "Name" = "private" }
 }
@@ -35,15 +35,15 @@ resource "aws_subnet" "private" {
 resource "aws_subnet" "persistence" {
   count             = 3
   cidr_block        = cidrsubnet(aws_default_vpc.default.cidr_block, 4, count.index + 9)
-  availability_zone = element(data.aws_availability_zones.default.names, count.index)
+  availability_zone = data.aws_availability_zones.default.names[count.index]
   vpc_id            = aws_default_vpc.default.id
   tags              = { "Name" = "persistence" }
 }
 
 resource "aws_route_table_association" "private" {
   count          = 3
-  route_table_id = element(aws_route_table.private.*.id, count.index)
-  subnet_id      = element(aws_subnet.private.*.id, count.index)
+  route_table_id = aws_route_table.private[count.index].id
+  subnet_id      = aws_subnet.private[count.index].id
 }
 
 resource "aws_route_table" "private" {
@@ -53,9 +53,9 @@ resource "aws_route_table" "private" {
 
 resource "aws_route" "private" {
   count                  = 3
-  route_table_id         = element(aws_route_table.private.*.id, count.index)
+  route_table_id         = aws_route_table.private[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = element(aws_nat_gateway.nat.*.id, count.index)
+  nat_gateway_id         = aws_nat_gateway.nat[count.index].id
 }
 
 resource "aws_default_vpc" "default" {
@@ -79,5 +79,5 @@ resource "aws_default_security_group" "default" {
 }
 
 output "nat_ips" {
-  value = aws_nat_gateway.nat.*.public_ip
+  value = aws_nat_gateway.nat[*].public_ip
 }
