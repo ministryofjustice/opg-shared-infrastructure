@@ -12,9 +12,9 @@ resource "aws_cloudwatch_query_definition" "counted_requests" {
   name            = "AWS-WAF/counted-requests"
   log_group_names = [aws_cloudwatch_log_group.waf_shared.name]
   query_string    = <<EOF
-fields labels.0.name, labels.1.name, labels.2.name, labels.3.name
-|filter @message like '"overriddenAction":"BLOCK"'
-| stats count() by labels.0.name, labels.1.name, labels.2.name, labels.3.name
+fields action, terminatingRuleId, ruleGroupList.0.terminatingRule.ruleId, httpRequest.country, httpRequest.clientIp, httpRequest.uri
+| filter nonTerminatingMatchingRules.0.action = "COUNT"
+| stats count() by action, terminatingRuleId, ruleGroupList.0.terminatingRule.ruleId, httpRequest.country, httpRequest.clientIp, httpRequest.uri
 EOF
 }
 
