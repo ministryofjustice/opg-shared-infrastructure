@@ -33,6 +33,12 @@ resource "aws_wafv2_web_acl" "shared" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
+        rule_action_override {
+          action_to_use {
+            count {}
+          }
+          name = "SizeRestrictions_BODY"
+        }
       }
     }
 
