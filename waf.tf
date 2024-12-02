@@ -1,5 +1,5 @@
 locals {
-  waf_blocking_enabled = terraform.workspace == "development" ? true : false
+  waf_blocking_enabled = true
 }
 
 resource "aws_wafv2_web_acl" "shared" {
