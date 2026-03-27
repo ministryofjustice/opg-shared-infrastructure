@@ -1,0 +1,31 @@
+name: Pull Request Workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  terraform-plan:
+    strategy:
+      matrix:
+        include:
+          - workspace_name: development
+            oidc_role: ${{ vars.OIDC_ROLE_PULL_REQUEST }}
+            default_role: ${{ vars.CI_ROLE_SHARED_DEVELOPMENT }}
+          - workspace_name: production
+            oidc_role: ${{ vars.OIDC_ROLE_PULL_REQUEST }}
+            default_role: ${{ vars.CI_ROLE_SHARED_PRODUCTION_PULL_REQUEST }}
+    name: "TF Plan Environment: ${{ matrix.workspace_name }}"
+    uses: ./.github/workflows/_terraform.yml
+    with:
+      workspace_name: ${{ matrix.workspace_name }}
+      oidc_role: ${{ matrix.oidc_role }}
+      default_role: ${{ matrix.default_role }}
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+

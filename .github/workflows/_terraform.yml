@@ -1,0 +1,105 @@
+name: "[Job] Terraform Plan & Apply"
+
+permissions:
+  id-token: write
+
+on:
+  workflow_call:
+    inputs:
+      workspace_name:
+        description: "The terraform workspace to target for environment actions"
+        required: true
+        type: string
+
+      oidc_role:
+        description: "The OIDC role to assume for AWS access"
+        required: true
+        type: string
+
+      default_role:
+        description: "The default CI role to assume"
+        required: true
+        type: string
+
+      apply:
+        description: "Whether to apply the deployment"
+        required: false
+        type: boolean
+        default: false
+
+    secrets:
+      github_access_token:
+        description: "Github Token"
+        required: true
+
+jobs:
+  terraform_environment_workflow:
+    runs-on: ubuntu-latest
+    env:
+      TF_WORKSPACE: ${{ inputs.workspace_name }}
+      TF_VAR_default_role: ${{ inputs.default_role }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: "0"
+      - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
+
+      - name: "Parse terraform version"
+        id: tf_version
+        uses: ministryofjustice/opg-github-actions/.github/actions/terraform-version@ea1e81f43e7593acd74cc114085930f5f54914a2 # v3.1.7
+
+      - name: "Terraform version [${{ steps.tf_version.outputs.version }}]"
+        run: echo "terraform version [${{ steps.tf_version.outputs.version }}]" >> $GITHUB_STEP_SUMMARY
+      
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ steps.tf_version.outputs.version }}
+          terraform_wrapper: false
+
+      - name: Format Terraform
+        run: terraform fmt -check -recursive
+
+      - uses: terraform-linters/setup-tflint@b480b8fcdaa6f2c577f8e4fa799e89e756bb7c93 # v6.2.2
+        name: Setup TFLint
+        with:
+          tflint_version: v0.60.0
+
+      - name: Lint Terraform
+        id: tf_lint
+        run: tflint --recursive
+
+      - name: Snyk IAC
+        id: snyk_iac
+        run: echo "::warning title=MISSING-IAC-SCAN::Please add the snyk iac scan composite action when it is available."
+
+      # TODO: Add Snyk IAC scan and upload results to GitHub Security tab when the composite action is available.
+
+      # - name: Upload Snyk IAC scan results to GitHub Security tab
+      #   id: snyk_upload_sarif
+      #   uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
+      #   if: always()
+      #   with:
+      #     category: "Terraform"
+      #     sarif_file: "test-results/snyk-iac.sarif"
+      
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ inputs.oidc_role }}
+          role-duration-seconds: 3600
+          role-session-name: opg-shared-infrastructure-github-actions-ci
+
+      - name: Terraform Init
+        env:
+          TF_WORKSPACE: default
+        run: terraform init -input=false
+
+      - name: Terraform Plan
+        run: |
+          terraform workspace show
+          terraform plan -lock-timeout=300s -input=false -parallelism=30 -out=terraform.plan
+
+      - name: Terraform Apply
+        if: inputs.apply == true
+        run: terraform apply -lock-timeout=300s -input=false -auto-approve -parallelism=30 terraform.plan

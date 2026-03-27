@@ -1,0 +1,36 @@
+name: Main Branch Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  plan-and-apply-development:
+    name: "TF Plan Environment: ${{ matrix.workspace_name }}"
+    uses: ./.github/workflows/_terraform.yml
+    with:
+      workspace_name: development
+      oidc_role: ${{ vars.OIDC_ROLE_MAIN }}
+      default_role: ${{ vars.CI_ROLE_SHARED_DEVELOPMENT }}
+      apply: true
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+  plan-and-apply-production:
+    name: "TF Plan Environment: ${{ matrix.workspace_name }}"
+    needs:
+      - plan-and-apply-development
+    uses: ./.github/workflows/_terraform.yml
+    with:
+      workspace_name: production
+      oidc_role: ${{ vars.OIDC_ROLE_MAIN }}
+      default_role: ${{ vars.CI_ROLE_SHARED_PRODUCTION_MAIN }}
+      apply: true
+    secrets:
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
+

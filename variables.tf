@@ -1,10 +1,5 @@
 variable "default_role" {
-  default = "shared-ci"
-  type    = string
-}
-
-variable "management_role" {
-  default = "shared-ci"
+  default = "oidc-opg-shared-infrastructure-shared-development"
   type    = string
 }
 
