@@ -1,7 +1,7 @@
 resource "aws_vpc_endpoint" "s3" {
   count             = 3
   vpc_id            = aws_default_vpc.default.id
-  service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
+  service_name      = "com.amazonaws.${data.aws_region.current.region}.s3"
   route_table_ids   = [aws_route_table.private[count.index].id]
   vpc_endpoint_type = "Gateway"
   policy            = data.aws_iam_policy_document.s3_vpc_endpoint.json
@@ -21,10 +21,10 @@ data "aws_iam_policy_document" "s3_vpc_endpoint" {
 }
 
 resource "aws_security_group" "vpc_endpoints_private" {
-  name        = "vpc-endpoint-access-private-subnets-${data.aws_region.current.name}"
+  name        = "vpc-endpoint-access-private-subnets-${data.aws_region.current.region}"
   description = "VPC Endpoint Access from Private Subnets"
   vpc_id      = aws_default_vpc.default.id
-  tags        = { Name = "vpc-endpoint-access-private-subnets-${data.aws_region.current.name}" }
+  tags        = { Name = "vpc-endpoint-access-private-subnets-${data.aws_region.current.region}" }
 }
 
 resource "aws_security_group_rule" "vpc_endpoints_private_subnet_ingress" {
@@ -34,7 +34,7 @@ resource "aws_security_group_rule" "vpc_endpoints_private_subnet_ingress" {
   security_group_id = aws_security_group.vpc_endpoints_private.id
   type              = "ingress"
   cidr_blocks       = aws_subnet.private[*].cidr_block
-  description       = "Allow Services in Private Subnets of ${data.aws_region.current.name} to connect to VPC Interface Endpoints"
+  description       = "Allow Services in Private Subnets of ${data.aws_region.current.region} to connect to VPC Interface Endpoints"
 }
 
 locals {
@@ -56,12 +56,12 @@ resource "aws_vpc_endpoint" "private" {
   for_each = local.interface_endpoint
 
   vpc_id              = aws_default_vpc.default.id
-  service_name        = "com.amazonaws.${data.aws_region.current.name}.${each.value}"
+  service_name        = "com.amazonaws.${data.aws_region.current.region}.${each.value}"
   vpc_endpoint_type   = "Interface"
   private_dns_enabled = true
   security_group_ids  = aws_security_group.vpc_endpoints_private[*].id
   subnet_ids          = data.aws_subnets.private.ids
-  tags                = { Name = "${each.value}-shared-private-${data.aws_region.current.name}" }
+  tags                = { Name = "${each.value}-shared-private-${data.aws_region.current.region}" }
 }
 
 data "aws_subnets" "private" {
