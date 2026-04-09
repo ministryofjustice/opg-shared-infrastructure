@@ -46,7 +46,7 @@ jobs:
 
       - name: "Parse terraform version"
         id: tf_version
-        uses: ministryofjustice/opg-github-actions/actions/terraform-version@b605e1e2c94b399e8139c4c2be2c8730700e0004 # v4.5.2
+        uses: ministryofjustice/opg-github-actions/actions/terraform-version@3a15a16fcc221821c2869eecd8822c5d62af2984 # v4.7.0
 
       - name: "Terraform version [${{ steps.tf_version.outputs.version }}]"
         run: echo "terraform version [${{ steps.tf_version.outputs.version }}]" >> $GITHUB_STEP_SUMMARY
