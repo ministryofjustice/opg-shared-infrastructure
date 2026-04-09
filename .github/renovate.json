@@ -1,7 +1,7 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": [
-      "config:base",
+      "config:recommended",
       "helpers:pinGitHubActionDigests",
       "schedule:monthly"
     ],
@@ -14,20 +14,24 @@
     "packageRules": [
       {
         "groupName": "Minor and Patch Updates",
-        "matchPackagePatterns": ["*"],
         "matchUpdateTypes": [
           "minor",
           "patch"
         ],
-        "addLabels": ["minor-and-patch"]
+        "addLabels": ["minor-and-patch"],
+        "matchPackageNames": [
+          "*"
+        ]
       },
       {
         "groupName": "Major Updates",
-        "matchPackagePatterns": ["*"],
         "matchUpdateTypes": [
           "major"
         ],
-        "addLabels": ["major"]
+        "addLabels": ["major"],
+        "matchPackageNames": [
+          "*"
+        ]
       }
 
     ]
