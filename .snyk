@@ -1,0 +1,27 @@
+version: v1.25.1
+ignore:
+# IAC ignores
+  # LOW
+  SNYK-CC-AWS-423:
+    - 'network.tf > resource > aws_default_vpc[default]':
+      reason: Default VPC resource being maintained, refactor this.
+      expires: 2026-06-26T08:00:00Z
+      created: 2026-04-10T11:00:00Z
+  # MEDIUM
+  SNYK-CC-AWS-428:
+    - 'vpc_endpoints.tf > resource > aws_vpc_endpoint[private]':
+      reason: Endpoint policy not attached, restrict this.
+      expires: 2026-06-26T08:00:00Z
+      created: 2026-04-10T11:00:00Z
+  SNYK-CC-TF-119:
+    - 'vpc_endpoints.tf > data > aws_iam_policy_document[s3_vpc_endpoint]':
+      reason: Overly broad IAM policy, tighten this.
+      expires: 2026-06-26T08:00:00Z
+      created: 2026-04-10T11:00:00Z
+  # HIGH
+  SNYK-CC-TF-69:
+    - 'vpc_endpoints.tf > aws_iam_policy_document[s3_vpc_endpoint] > statement':
+      reason: Overly permissive policy, tighten this.
+      expires: 2026-06-26T08:00:00Z
+      created: 2026-04-10T11:00:00Z
+patch: {}

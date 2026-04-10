@@ -28,4 +28,4 @@ jobs:
       default_role: ${{ matrix.default_role }}
     secrets:
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
+      snyk_opg_org_token: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
