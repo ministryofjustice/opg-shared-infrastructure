@@ -2,6 +2,9 @@ name: "[Job] Terraform Plan & Apply"
 
 permissions:
   id-token: write
+  contents: read
+  security-events: write
+  pull-requests: read
 
 on:
   workflow_call:
@@ -31,6 +34,9 @@ on:
       github_access_token:
         description: "Github Token"
         required: true
+      snyk_opg_org_token:
+        description: "Snyk token for OPG organization"
+        required: true
 
 jobs:
   terraform_environment_workflow:
@@ -50,7 +56,7 @@ jobs:
 
       - name: "Terraform version [${{ steps.tf_version.outputs.version }}]"
         run: echo "terraform version [${{ steps.tf_version.outputs.version }}]" >> $GITHUB_STEP_SUMMARY
-      
+
       - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
         with:
           terraform_version: ${{ steps.tf_version.outputs.version }}
@@ -68,20 +74,36 @@ jobs:
         id: tf_lint
         run: tflint --recursive
 
-      - name: Snyk IAC
+      - name: Configure AWS Credentials For ECR Login
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ vars.OIDC_MANAGEMENT_ECR_ROLE }}
+          role-duration-seconds: 3600
+          role-session-name: opg-shared-infrastructure-github-actions-ecr
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@f2e9fc6c2b355c1890b65e6f6f0e2ac3e6e22f78 # v2.1.2
+        with:
+          registries: 311462405659
+
+      - name: Snky IAC
         id: snyk_iac
-        run: echo "::warning title=MISSING-IAC-SCAN::Please add the snyk iac scan composite action when it is available."
+        uses: ministryofjustice/opg-github-actions/actions/snyk-iac@ceeda9d30ec7f6705c819d0b7664b9a79df99a3b # v4.8.0
+        with:
+          iac_test_directory: "./"
+          sarif_filename: "snyk-iac.sarif"
+          SNYK_TOKEN: ${{ secrets.snyk_opg_org_token }}
 
-      # TODO: Add Snyk IAC scan and upload results to GitHub Security tab when the composite action is available.
+      - name: Upload Snyk IAC scan results to GitHub Security tab
+        id: snyk_upload_sarif
+        uses: github/codeql-action/upload-sarif@c10b8064de6f491fea524254123dbe5e09572f13 # v4.35.1
+        if: always()
+        with:
+          category: "Terraform"
+          sarif_file: "test-results/snyk-iac.sarif"
 
-      # - name: Upload Snyk IAC scan results to GitHub Security tab
-      #   id: snyk_upload_sarif
-      #   uses: github/codeql-action/upload-sarif@0d579ffd059c29b07949a3cce3983f0780820c98 # v4.32.6
-      #   if: always()
-      #   with:
-      #     category: "Terraform"
-      #     sarif_file: "test-results/snyk-iac.sarif"
-      
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
