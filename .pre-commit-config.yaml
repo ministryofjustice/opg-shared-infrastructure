@@ -3,17 +3,17 @@
 ---
     repos:
       - repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v6.0.0
+        rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
         hooks:
           - id: trailing-whitespace
           - id: end-of-file-fixer
           - id: check-yaml
       - repo: https://github.com/antonbabenko/pre-commit-terraform
-        rev: v1.105.0
+        rev: d0e12caebb2ab0ee8bf98181c8bfe9702bca103d  # frozen: v1.105.0
         hooks:
           - id: terraform_fmt
           - id: terraform_docs_without_aggregate_type_defaults
       - repo: https://github.com/renovatebot/pre-commit-hooks
-        rev: 43.110.10
+        rev: cbf190d5e31b9e0845b3fb1c0af190927b46e5e3  # frozen: 43.141.2
         hooks:
             - id: renovate-config-validator
