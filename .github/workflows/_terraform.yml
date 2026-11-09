@@ -45,13 +45,13 @@ jobs:
       TF_WORKSPACE: ${{ inputs.workspace_name }}
       TF_VAR_default_role: ${{ inputs.default_role }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: "0"
           
       - name: "Parse terraform version"
         id: tf_version
-        uses: ministryofjustice/opg-github-actions/actions/terraform-version@3a15a16fcc221821c2869eecd8822c5d62af2984 # v4.7.0
+        uses: ministryofjustice/opg-github-actions/actions/terraform-version@e8b6e80d440613671b8d6f87b5e52a5363cc974a # v5.0.0
 
       - name: "Terraform version [${{ steps.tf_version.outputs.version }}]"
         run: echo "terraform version [${{ steps.tf_version.outputs.version }}]" >> $GITHUB_STEP_SUMMARY
@@ -89,7 +89,7 @@ jobs:
 
       - name: Snky IAC
         id: snyk_iac
-        uses: ministryofjustice/opg-github-actions/actions/snyk-iac@ceeda9d30ec7f6705c819d0b7664b9a79df99a3b # v4.8.0
+        uses: ministryofjustice/opg-github-actions/actions/snyk-iac@e8b6e80d440613671b8d6f87b5e52a5363cc974a # v5.0.0
         with:
           iac_test_directory: "./"
           sarif_filename: "snyk-iac.sarif"
