@@ -7,7 +7,7 @@ terraform {
     assume_role = {
       role_arn = "arn:aws:iam::311462405659:role/oidc-opg-shared-infrastructure-management"
     }
-    dynamodb_table = "remote_lock"
+    use_lockfile = true
   }
 }
 
